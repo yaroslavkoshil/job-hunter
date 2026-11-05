@@ -1,0 +1,16 @@
+{
+  "name": "threads-job-hunter",
+  "version": "1.0.0",
+  "description": "Threads vacancy and lead monitor for Horoshop developers (and any custom niche)",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build:client": "npm run build --prefix client",
+    "build": "npm run install:all && npm run build:client",
+    "start": "node server/index.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
