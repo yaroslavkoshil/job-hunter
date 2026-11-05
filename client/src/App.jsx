@@ -14,8 +14,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   Info,
-  Sparkles,
-  HelpCircle
+  ExternalLink,
+  PlusCircle,
+  Trash2
 } from 'lucide-react';
 
 const STATUS_TABS = [
@@ -36,7 +37,7 @@ export default function App() {
   const [isScanning, setIsScanning] = useState(false);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
 
-  // Theme state: defaults to 'light' per user request, persists in localStorage
+  // Theme state: defaults to 'light', persists in localStorage
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
   });
@@ -94,11 +95,11 @@ export default function App() {
     fetchData();
   }, []);
 
-  // Handle manual or automatic scan trigger
+  // Handle scan trigger
   const handleTriggerScan = async (provider = null) => {
     setIsScanning(true);
     const activeProvider = provider || settings?.provider || 'duckduckgo';
-    showToast(`Запущено пошук Threads (${activeProvider})...`, 'info');
+    showToast(`Запущено пошук реальних публікацій у Threads...`, 'info');
 
     try {
       const res = await fetch('/api/scan', {
@@ -112,9 +113,9 @@ export default function App() {
         const added = data.summary?.newAdded || 0;
         showToast(
           added > 0
-            ? `🎉 Знайдено та додано ${added} нових вакансій!`
-            : 'Пошук завершено. Додано актуальні ліди.',
-          'success'
+            ? `🎉 Знайдено та додано ${added} нових реальних публікацій!`
+            : 'Пошук завершено. Нових постів наразі не виявлено.',
+          added > 0 ? 'success' : 'info'
         );
         fetchData();
       } else {
@@ -175,6 +176,22 @@ export default function App() {
       }
     } catch (err) {
       showToast('Помилка видалення поста', 'error');
+    }
+  };
+
+  // Clear all posts
+  const handleClearAllPosts = async () => {
+    if (!window.confirm('Ви впевнені, що хочете очистити всі пости з кабінету?')) return;
+    try {
+      const res = await fetch('/api/posts/clear-all', { method: 'POST' });
+      if (res.ok) {
+        setPosts([]);
+        showToast('Всі пости видалено з кабінету', 'info');
+        const statsRes = await fetch('/api/stats');
+        setStats(await statsRes.json());
+      }
+    } catch (err) {
+      showToast('Помилка очищення списку', 'error');
     }
   };
 
@@ -303,18 +320,30 @@ export default function App() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleTriggerScan('mock')}
-              className={`text-xs px-3.5 py-2 rounded-xl border flex items-center gap-1.5 transition-colors cursor-pointer font-semibold ${
-                isLight
-                  ? 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200'
-                  : 'bg-neutral-800 hover:bg-neutral-750 text-neutral-300 border-neutral-700'
+            <a
+              href="https://www.threads.net/search?q=%D1%85%D0%BE%D1%80%D0%BE%D1%88%D0%BE%D0%BF"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`text-xs px-3.5 py-2 rounded-xl border flex items-center gap-1.5 font-semibold transition-colors ${
+                isLight 
+                  ? 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' 
+                  : 'bg-neutral-800 hover:bg-neutral-750 text-purple-300 border-neutral-700'
               }`}
-              title="Згенерувати свіжий тестовий лід"
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-              <span>+ Свіжий лід</span>
-            </button>
+              <span>Пошук у Threads</span>
+              <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+            </a>
+            {posts.length > 0 && (
+              <button
+                onClick={handleClearAllPosts}
+                className={`text-xs p-2 rounded-xl border transition-colors cursor-pointer ${
+                  isLight ? 'text-slate-400 hover:text-rose-600 border-slate-200 hover:bg-rose-50' : 'text-neutral-500 hover:text-rose-400 border-neutral-850 hover:bg-neutral-900'
+                }`}
+                title="Очистити всі пости з кабінету"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -403,33 +432,56 @@ export default function App() {
         {isLoadingPosts ? (
           <div className="text-center py-20">
             <RefreshCw className="w-8 h-8 text-purple-600 animate-spin mx-auto mb-3" />
-            <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>Завантаження знайдених вакансій...</p>
+            <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>Завантаження вакансій...</p>
           </div>
         ) : filteredPosts.length === 0 ? (
-          <div className={`text-center py-20 border border-dashed rounded-3xl p-8 ${
-            isLight ? 'bg-white border-slate-300' : 'bg-neutral-900/30 border-neutral-800'
+          <div className={`text-center py-16 border border-dashed rounded-3xl p-8 max-w-2xl mx-auto ${
+            isLight ? 'bg-white border-slate-300 shadow-sm' : 'bg-neutral-900/30 border-neutral-800'
           }`}>
-            <FolderOpen className={`w-12 h-12 mx-auto mb-3 ${isLight ? 'text-slate-400' : 'text-neutral-600'}`} />
-            <h3 className={`text-sm font-bold ${isLight ? 'text-slate-800' : 'text-neutral-200'}`}>
-              Постів не знайдено за заданими фільтрами
+            <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center mx-auto mb-4">
+              <FolderOpen className="w-7 h-7" />
+            </div>
+            <h3 className={`text-base font-bold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              У кабінеті поки немає збережених вакансій
             </h3>
-            <p className={`text-xs mt-1 max-w-md mx-auto ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
-              Спробуйте змінити пошуковий запит, очистити фільтри або запустити сканування Threads з кнопки зверху.
+            <p className={`text-xs leading-relaxed max-w-md mx-auto mb-6 ${isLight ? 'text-slate-600' : 'text-neutral-400'}`}>
+              Всі знайдені реальні дописи у Threads будуть зберігатися тут. Ви можете запустити сканування, відкрити пошук у самому Threads або додати знайдений пост вручну за посиланням.
             </p>
-            <div className="mt-4 flex items-center justify-center gap-3">
-              <button
-                onClick={() => { setSelectedStatus('all'); setSelectedTag(''); setSearchQuery(''); }}
-                className={`px-3.5 py-2 text-xs rounded-xl border transition-colors cursor-pointer font-semibold ${
-                  isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' : 'bg-neutral-800 hover:bg-neutral-750 text-neutral-200 border-neutral-750'
-                }`}
-              >
-                Скинути фільтри
-              </button>
+
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => handleTriggerScan()}
-                className="px-4 py-2 text-xs rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold shadow-md shadow-purple-900/20 transition-colors cursor-pointer"
+                disabled={isScanning}
+                className="px-4 py-2.5 text-xs rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold shadow-md shadow-purple-900/20 transition-all cursor-pointer flex items-center gap-2"
               >
-                Запустити пошук у Threads
+                <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
+                <span>{isScanning ? 'Сканування...' : 'Шукати зараз'}</span>
+              </button>
+
+              <a
+                href="https://www.threads.net/search?q=%D1%85%D0%BE%D1%80%D0%BE%D1%88%D0%BE%D0%BF"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`px-4 py-2.5 text-xs rounded-xl border font-semibold transition-colors flex items-center gap-1.5 ${
+                  isLight 
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200' 
+                    : 'bg-neutral-800 hover:bg-neutral-750 text-neutral-200 border-neutral-700'
+                }`}
+              >
+                <span>Відкрити пошук у Threads</span>
+                <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+              </a>
+
+              <button
+                onClick={() => setIsManualAddOpen(true)}
+                className={`px-4 py-2.5 text-xs rounded-xl border font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  isLight 
+                    ? 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300' 
+                    : 'bg-neutral-900 hover:bg-neutral-850 text-neutral-300 border-neutral-800'
+                }`}
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-purple-600" />
+                <span>Додати пост вручну</span>
               </button>
             </div>
           </div>

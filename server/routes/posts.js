@@ -59,6 +59,16 @@ router.delete('/:id', (req, res) => {
   }
 });
 
+// Clear all posts
+router.post('/clear-all', (req, res) => {
+  try {
+    db.clearAllPosts();
+    res.json({ success: true, message: 'Всі пости успішно видалено' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Add manual post (e.g. if user saw a post in Threads and wants to paste link)
 router.post('/manual', (req, res) => {
   try {

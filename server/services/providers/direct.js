@@ -80,3 +80,4 @@ function detectTags(text) {
   if (t.includes('дизайн') || t.includes('шаблон')) tags.push('Дизайн');
   return tags;
 }
+

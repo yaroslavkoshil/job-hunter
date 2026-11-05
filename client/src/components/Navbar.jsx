@@ -7,9 +7,9 @@ import {
   History,
   Radio,
   ChevronDown,
-  Sparkles,
   Sun,
-  Moon
+  Moon,
+  ExternalLink
 } from 'lucide-react';
 
 export default function Navbar({
@@ -95,6 +95,22 @@ export default function Navbar({
             )}
           </button>
 
+          {/* Open Search in Threads Directly */}
+          <a
+            href="https://www.threads.net/search?q=%D1%85%D0%BE%D1%80%D0%BE%D1%88%D0%BE%D0%BF"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+              isLight
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
+                : 'bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-neutral-200'
+            }`}
+            title="Відкрити живий пошук прямо на threads.net"
+          >
+            <span>Threads</span>
+            <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+          </a>
+
           {/* Scan Now Dropdown Button */}
           <div className="relative">
             <div className="flex items-center rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 shadow-md shadow-purple-900/20">
@@ -134,25 +150,13 @@ export default function Navbar({
                   <span className="text-[10px] text-emerald-500 font-mono font-bold">Auto</span>
                 </button>
                 <button
-                  onClick={() => handleScanWithProvider('mock')}
-                  className={`w-full px-3.5 py-2 text-left flex items-center justify-between transition-colors ${
-                    isLight ? 'text-slate-700 hover:bg-slate-50' : 'text-neutral-200 hover:bg-neutral-800'
-                  }`}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-amber-500" />
-                    Генератор свіжих лідів
-                  </span>
-                  <span className="text-[10px] text-amber-500 font-mono font-bold">Demo</span>
-                </button>
-                <button
                   onClick={() => handleScanWithProvider('direct')}
                   className={`w-full px-3.5 py-2 text-left flex items-center justify-between transition-colors ${
                     isLight ? 'text-slate-700 hover:bg-slate-50' : 'text-neutral-200 hover:bg-neutral-800'
                   }`}
                 >
-                  <span>Прямий Threads API</span>
-                  <span className="text-[10px] text-purple-500 font-mono font-bold">Cookie</span>
+                  <span>Прямий Threads (Cookie)</span>
+                  <span className="text-[10px] text-purple-500 font-mono font-bold">Session</span>
                 </button>
                 <button
                   onClick={() => handleScanWithProvider('google')}

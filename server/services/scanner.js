@@ -3,7 +3,6 @@ import { searchDuckDuckGo } from './providers/duckduckgo.js';
 import { searchGoogleCSE } from './providers/google.js';
 import { searchSerpApi } from './providers/serpapi.js';
 import { searchThreadsDirect } from './providers/direct.js';
-import { generateMockLeads } from './providers/mock.js';
 import { sendTelegramNotification } from './telegram.js';
 
 class ScannerService {
@@ -23,19 +22,20 @@ class ScannerService {
     const settings = db.getSettings();
     const provider = forceProvider || settings.provider || 'duckduckgo';
 
-    console.log(`[Scanner] Запуск сканування Threads через провайдер: ${provider}`);
+    console.log(`[Scanner] Запуск пошуку реальних постів Threads через: ${provider}`);
 
     try {
       let rawPosts = [];
 
-      // 1. Check if user configured Threads session cookie
-      if (settings.threadsCookie && provider === 'direct') {
+      // 1. Authenticated direct Threads search (if session cookie provided)
+      if (settings.threadsCookie && (provider === 'direct' || !provider)) {
         rawPosts = await searchThreadsDirect(
           settings.keywords,
           settings.negativeKeywords,
           settings.threadsCookie
         );
       } else if (provider === 'google' && settings.googleApiKey && settings.googleCseId) {
+        // 2. Google Custom Search API
         rawPosts = await searchGoogleCSE(
           settings.keywords,
           settings.negativeKeywords,
@@ -43,32 +43,24 @@ class ScannerService {
           settings.googleCseId
         );
       } else if (provider === 'serpapi' && settings.serpApiKey) {
+        // 3. SerpAPI Google
         rawPosts = await searchSerpApi(
           settings.keywords,
           settings.negativeKeywords,
           settings.serpApiKey
         );
-      } else if (provider === 'mock') {
-        rawPosts = generateMockLeads(settings.keywords);
       } else {
-        // Default Web Search
+        // 4. Default web search
         rawPosts = await searchDuckDuckGo(
           settings.keywords,
           settings.negativeKeywords
         );
-
-        // If Web Search yielded 0 posts (e.g. rate-limited on cloud IP),
-        // fallback to fresh lead generator so user always receives active updates
-        if (rawPosts.length === 0) {
-          console.log('[Scanner] Зовнішній пошук повернув 0 або заблокований, задіюємо смарт-генератор лідів.');
-          rawPosts = generateMockLeads(settings.keywords);
-        }
       }
 
-      // Add to database (automatically deduplicates by URL)
+      // Add only real verified posts (deduplicates by URL)
       const addedPosts = db.addPosts(rawPosts);
 
-      // Send telegram notifications for newly added posts
+      // Send telegram notifications only for real added posts
       if (settings.telegram?.enabled && settings.telegram?.botToken && settings.telegram?.chatId) {
         for (const post of addedPosts) {
           try {
@@ -98,8 +90,8 @@ class ScannerService {
         newCount: addedPosts.length,
         durationMs: Date.now() - startTime,
         message: addedPosts.length > 0 
-          ? `Успішно знайдено та додано ${addedPosts.length} нових постів.`
-          : `Сканування завершено (${rawPosts.length} виявлено, нових 0).`
+          ? `Успішно знайдено ${addedPosts.length} нових постів у Threads.`
+          : `Сканування завершено. Нових постів наразі не виявлено.`
       });
 
       return {

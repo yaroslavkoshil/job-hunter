@@ -121,14 +121,14 @@ class Database {
   init() {
     if (!fs.existsSync(DB_FILE)) {
       const initialData = {
-        posts: SEED_POSTS,
+        posts: [],
         settings: DEFAULT_SETTINGS,
         scanLogs: [
           {
             timestamp: new Date().toISOString(),
             status: 'success',
-            foundCount: SEED_POSTS.length,
-            message: 'Система ініціалізована. Початкові тестові ліди завантажено.'
+            foundCount: 0,
+            message: 'Система ініціалізована. Готова до моніторингу реальних постів Threads.'
           }
         ]
       };
@@ -246,6 +246,13 @@ class Database {
       return true;
     }
     return false;
+  }
+
+  clearAllPosts() {
+    const data = this.load();
+    data.posts = [];
+    this.save(data);
+    return true;
   }
 
   // --- SETTINGS ---
