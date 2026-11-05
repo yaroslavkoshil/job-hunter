@@ -1,54 +1,65 @@
 /**
- * Generates realistic fresh posts based on configured keywords for demo/testing.
+ * Generates realistic fresh posts based on configured keywords for demo/testing or fallback.
  */
 export function generateMockLeads(keywords = []) {
   const templates = [
     {
-      author: "serhii_coffee_roast",
-      name: "Сергій Мельник (Coffee Point)",
-      content: "Шукаю розробника для хорошопу! Робимо інтернет-магазин свіжообсмаженої кави. Шаблон вже куплений, треба налаштувати кастомні підписки на щомісячну доставку та підключити Нову Пошту з вибором поштоматів. Хто готовий взятися — напишіть у DM з рейтом.",
-      tags: ["Кастомний функціонал", "Нова Пошта", "eCommerce"]
+      author: "oleg_b2b_tools",
+      name: "Олег Бондаренко (B2B Tools)",
+      content: "Шукаю досвідченого розробника для сайту на Хорошопі! Потрібно налаштувати вивантаження залишків з BAS через API, зробити кастомний оптовий прайс для зареєстрованих клієнтів та поправити відображення характеристик. Хто вільний — напишіть у DM з прайсом та прикладами робіт.",
+      tags: ["BAS / 1C", "Оптові ціни", "API Інтеграція"],
+      matched: "шукаю розробника для хорошопу"
     },
     {
-      author: "yulia_kids_ua",
-      name: "Юлія (MiniMe Дитячий одяг)",
-      content: "Потрібен розробник Хорошоп. Треба оптимізувати швидкість завантаження мобільної версії та додати кастомний фільтр по росту дитини. Також є задача доробити синхронізацію залишків через API. Пишіть у тредс або в телеграм.",
-      tags: ["Оптимізація швидкості", "Фільтри", "API"]
+      author: "kristina_cosmetics",
+      name: "Христина (Beauty Store)",
+      content: "Дівчата й хлопці, хто розбирається в шаблонах Хорошопу? Хочемо освіжити дизайн шоуруму: додати швидке замовлення в 1 клік, підключити оплату частинами від Монобанку та налаштувати банери до акцій. Робота проектна.",
+      tags: ["Редизайн", "Монобанк", "Швидке замовлення"],
+      matched: "потрібен розробник хорошоп"
     },
     {
-      author: "andriy_auto_parts",
-      name: "Андрій AutoParts",
-      content: "Шукаємо людину, яка добре знає Хорошоп. Треба залити базу з 15 000 автозапчастин через CSV/XLSX, налаштувати модифікації та зробити вивантаження у Google Shopping / Merchant Center. Робота термінова!",
-      tags: ["Терміново", "Google Shopping", "10k+ товарів"]
+      author: "maksym_ecommerce_pro",
+      name: "Максим Демченко",
+      content: "Терміново потрібен спеціаліст по Хорошопу! Переносимо великий каталог товарів (понад 6 000 позицій) з Prom.ua на Хорошоп зі збереженням SEO-структури URL, редіректів та категорій. Бюджет адекватний, оплата за результат.",
+      tags: ["Міграція Prom", "SEO", "Каталог 6k+"],
+      matched: "перенести на хорошоп"
     },
     {
-      author: "nastia_beauty_lab",
-      name: "Анастасія Б'юті",
-      content: "Хто робить сайти на Horoshop? Шукаю спеціаліста на постійну підтримку магазину косметики: дрібні правки по верстці, підключення банерів до акцій, базова SEO-оптимізація тегів. Робота по годинах або фікс.",
-      tags: ["Підтримка", "SEO", "Верстка"]
+      author: "vitaliy_sports_ua",
+      name: "Віталій Спорт",
+      content: "Агенція шукає верстальника / розробника під Horoshop на постійні дрібні таски: правки CSS, кастомізація блоків, налаштування фільтрів та підключення відстеження конверсій GA4 / Meta Pixel. Робота погодинна або за таск.",
+      tags: ["Постійні таски", "Верстка", "Аналітика GA4"],
+      matched: "хорошоп робота"
+    },
+    {
+      author: "yulia_kids_apparel",
+      name: "Юлія (Kids Joy UA)",
+      content: "Шукаємо того, хто працює з Хорошопом! Потрібно доробити мобільну версію магазину, додати вибір розміру з таблицею у попапі та налаштувати автоматичні ТТН для Нової Пошти через модуль. Хто може взятися вже цього тижня?",
+      tags: ["Мобільна версія", "Нова Пошта", "eCommerce"],
+      matched: "доробити сайт на хорошоп"
     }
   ];
 
   const randomItem = templates[Math.floor(Math.random() * templates.length)];
-  const postCode = Math.random().toString(36).substring(2, 9);
-  const keyword = keywords[Math.floor(Math.random() * keywords.length)] || 'шукаю розробника для хорошопу';
+  const postCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+  const keyword = randomItem.matched || (keywords[0] || 'хорошоп розробник');
 
   return [
     {
-      id: `th_${randomItem.author}_${postCode}`,
+      id: `th_${randomItem.author}_${postCode.toLowerCase()}`,
       author: randomItem.author,
       authorName: randomItem.name,
       authorUrl: `https://www.threads.net/@${randomItem.author}`,
       avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(randomItem.name)}&background=8b5cf6&color=fff&bold=true`,
-      url: `https://www.threads.net/@${randomItem.author}/post/${postCode.toUpperCase()}`,
+      url: `https://www.threads.net/@${randomItem.author}/post/${postCode}`,
       content: randomItem.content,
       matchedKeywords: [keyword],
       date: new Date().toISOString(),
-      source: 'Threads Live Search',
+      source: 'Threads Search',
       status: 'new',
       notes: '',
       tags: randomItem.tags,
-      score: 96
+      score: 95
     }
   ];
 }

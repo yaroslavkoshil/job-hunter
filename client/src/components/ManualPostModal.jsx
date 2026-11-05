@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, PlusCircle, Link as LinkIcon } from 'lucide-react';
 
-export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
+export default function ManualPostModal({ isOpen, onClose, onAddPost, theme }) {
   const [url, setUrl] = useState('');
   const [author, setAuthor] = useState('');
   const [content, setContent] = useState('');
@@ -9,11 +9,12 @@ export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
 
   if (!isOpen) return null;
 
+  const isLight = theme === 'light';
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!url.trim() || !content.trim()) return;
 
-    // extract author from url if empty
     let detectedAuthor = author.trim();
     if (!detectedAuthor && url.includes('threads.net/@')) {
       const match = url.match(/threads\.net\/@([a-zA-Z0-9._]+)/);
@@ -40,16 +41,22 @@ export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <PlusCircle className="w-5 h-5 text-purple-400" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+      <div className={`w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border transition-colors ${
+        isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-neutral-900 border-neutral-800 text-neutral-100'
+      }`}>
+        <div className={`flex items-center justify-between px-6 py-4 border-b ${
+          isLight ? 'border-slate-200 bg-slate-50' : 'border-neutral-800'
+        }`}>
+          <h2 className={`text-base font-bold flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+            <PlusCircle className="w-5 h-5 text-purple-600" />
             Додати пост вручну
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-neutral-400 hover:text-white rounded-lg hover:bg-neutral-800 transition-colors"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              isLight ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+            }`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -57,7 +64,7 @@ export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1">
+            <label className={`block text-xs font-semibold mb-1 ${isLight ? 'text-slate-700' : 'text-neutral-300'}`}>
               Посилання на пост у Threads *
             </label>
             <div className="relative">
@@ -67,14 +74,16 @@ export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://www.threads.net/@username/post/..."
-                className="w-full text-xs pl-9 pr-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-750 text-white focus:outline-none focus:border-purple-500"
+                className={`w-full text-xs pl-9 pr-3.5 py-2.5 rounded-xl border focus:outline-none focus:border-purple-500 ${
+                  isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-neutral-950 border-neutral-750 text-white'
+                }`}
               />
-              <LinkIcon className="w-4 h-4 text-neutral-500 absolute left-3 top-3" />
+              <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1">
+            <label className={`block text-xs font-semibold mb-1 ${isLight ? 'text-slate-700' : 'text-neutral-300'}`}>
               Нікнейм автора (необов'язково)
             </label>
             <input
@@ -82,12 +91,14 @@ export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               placeholder="username (якщо пусто, визначиться з лінка)"
-              className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-750 text-white focus:outline-none focus:border-purple-500"
+              className={`w-full text-xs px-3.5 py-2.5 rounded-xl border focus:outline-none focus:border-purple-500 ${
+                isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-neutral-950 border-neutral-750 text-white'
+              }`}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1">
+            <label className={`block text-xs font-semibold mb-1 ${isLight ? 'text-slate-700' : 'text-neutral-300'}`}>
               Текст посту / запиту клієнта *
             </label>
             <textarea
@@ -96,12 +107,14 @@ export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Вставте текст повідомлення з Threads (наприклад: Шукаю розробника на Хорошоп, треба перенести 2000 товарів)..."
-              className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-750 text-white focus:outline-none focus:border-purple-500 resize-none"
+              className={`w-full text-xs px-3.5 py-2.5 rounded-xl border focus:outline-none focus:border-purple-500 resize-none ${
+                isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-neutral-950 border-neutral-750 text-white'
+              }`}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1">
+            <label className={`block text-xs font-semibold mb-1 ${isLight ? 'text-slate-700' : 'text-neutral-300'}`}>
               Теги (через кому)
             </label>
             <input
@@ -109,21 +122,25 @@ export default function ManualPostModal({ isOpen, onClose, onAddPost }) {
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="Терміново, Міграція, Фільтри"
-              className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-750 text-white focus:outline-none focus:border-purple-500"
+              className={`w-full text-xs px-3.5 py-2.5 rounded-xl border focus:outline-none focus:border-purple-500 ${
+                isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-neutral-950 border-neutral-750 text-white'
+              }`}
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-800">
+          <div className={`flex items-center justify-end gap-3 pt-3 border-t ${isLight ? 'border-slate-200' : 'border-neutral-800'}`}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white"
+              className={`px-4 py-2 text-xs font-semibold cursor-pointer ${
+                isLight ? 'text-slate-500 hover:text-slate-800' : 'text-neutral-400 hover:text-white'
+              }`}
             >
               Скасувати
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-900/30"
+              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-md shadow-purple-900/20 cursor-pointer"
             >
               Додати в кабінет
             </button>

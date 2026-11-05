@@ -2,25 +2,34 @@
 
 @layer base {
   body {
-    @apply bg-neutral-950 text-neutral-100 antialiased font-sans selection:bg-purple-500 selection:text-white min-h-screen;
+    @apply antialiased font-sans selection:bg-purple-500 selection:text-white min-h-screen transition-colors duration-200;
+  }
+
+  body.light {
+    @apply bg-slate-50 text-slate-900;
+  }
+
+  body.dark {
+    @apply bg-neutral-950 text-neutral-100;
   }
 }
 
-/* Custom scrollbar for dashboard */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+body.dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+body.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
 }

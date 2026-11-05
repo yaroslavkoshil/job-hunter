@@ -61,3 +61,4 @@ export async function searchSerpApi(keywords, negativeKeywords = [], apiKey) {
 
   return posts;
 }
+

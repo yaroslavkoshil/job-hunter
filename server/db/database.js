@@ -27,6 +27,7 @@ const DEFAULT_SETTINGS = {
   scanIntervalMinutes: 30,
   autoScanEnabled: true,
   provider: 'duckduckgo', // 'duckduckgo' | 'google' | 'serpapi' | 'direct' | 'mock'
+  threadsCookie: '',
   googleApiKey: '',
   googleCseId: '',
   serpApiKey: '',
@@ -310,3 +311,4 @@ class Database {
 }
 
 export const db = new Database();
+

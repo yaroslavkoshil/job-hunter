@@ -12,3 +12,4 @@ services:
       - SCAN_INTERVAL_MINUTES=30
     volumes:
       - ./server/data:/app/data
+

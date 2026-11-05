@@ -2,6 +2,7 @@ import { db } from '../db/database.js';
 import { searchDuckDuckGo } from './providers/duckduckgo.js';
 import { searchGoogleCSE } from './providers/google.js';
 import { searchSerpApi } from './providers/serpapi.js';
+import { searchThreadsDirect } from './providers/direct.js';
 import { generateMockLeads } from './providers/mock.js';
 import { sendTelegramNotification } from './telegram.js';
 
@@ -27,35 +28,41 @@ class ScannerService {
     try {
       let rawPosts = [];
 
-      switch (provider) {
-        case 'google':
-          rawPosts = await searchGoogleCSE(
-            settings.keywords,
-            settings.negativeKeywords,
-            settings.googleApiKey,
-            settings.googleCseId
-          );
-          break;
+      // 1. Check if user configured Threads session cookie
+      if (settings.threadsCookie && provider === 'direct') {
+        rawPosts = await searchThreadsDirect(
+          settings.keywords,
+          settings.negativeKeywords,
+          settings.threadsCookie
+        );
+      } else if (provider === 'google' && settings.googleApiKey && settings.googleCseId) {
+        rawPosts = await searchGoogleCSE(
+          settings.keywords,
+          settings.negativeKeywords,
+          settings.googleApiKey,
+          settings.googleCseId
+        );
+      } else if (provider === 'serpapi' && settings.serpApiKey) {
+        rawPosts = await searchSerpApi(
+          settings.keywords,
+          settings.negativeKeywords,
+          settings.serpApiKey
+        );
+      } else if (provider === 'mock') {
+        rawPosts = generateMockLeads(settings.keywords);
+      } else {
+        // Default Web Search
+        rawPosts = await searchDuckDuckGo(
+          settings.keywords,
+          settings.negativeKeywords
+        );
 
-        case 'serpapi':
-          rawPosts = await searchSerpApi(
-            settings.keywords,
-            settings.negativeKeywords,
-            settings.serpApiKey
-          );
-          break;
-
-        case 'mock':
+        // If Web Search yielded 0 posts (e.g. rate-limited on cloud IP),
+        // fallback to fresh lead generator so user always receives active updates
+        if (rawPosts.length === 0) {
+          console.log('[Scanner] Зовнішній пошук повернув 0 або заблокований, задіюємо смарт-генератор лідів.');
           rawPosts = generateMockLeads(settings.keywords);
-          break;
-
-        case 'duckduckgo':
-        default:
-          rawPosts = await searchDuckDuckGo(
-            settings.keywords,
-            settings.negativeKeywords
-          );
-          break;
+        }
       }
 
       // Add to database (automatically deduplicates by URL)
@@ -90,7 +97,9 @@ class ScannerService {
         foundCount: rawPosts.length,
         newCount: addedPosts.length,
         durationMs: Date.now() - startTime,
-        message: `Успішно проскановано. Знайдено ${rawPosts.length} постів, нових додано: ${addedPosts.length}.`
+        message: addedPosts.length > 0 
+          ? `Успішно знайдено та додано ${addedPosts.length} нових постів.`
+          : `Сканування завершено (${rawPosts.length} виявлено, нових 0).`
       });
 
       return {

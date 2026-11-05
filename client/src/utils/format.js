@@ -49,3 +49,4 @@ export function highlightKeywords(text, keywords = []) {
     return { text: part, isMatch: false };
   });
 }
+
